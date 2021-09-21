@@ -1,0 +1,90 @@
+{% extends 'shop/basic.html' %} {% block title%} My Awesome Cart
+Tracker{%endblock %} {% block body %}
+<div class="container">
+  <div class="col my-4">
+    <h2>Please Enter Your Email and Order Id To Track Your Order</h2>
+    <form id="trackerForm" action="#">
+      {% csrf_token %}
+      <!--<input type="hidden" id="itemsJson" name="itemsJson" />-->
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="inputname">Order Id</label>
+          <input
+            type="text"
+            class="form-control"
+            id="orderId"
+            name="orderId"
+            placeholder="Order Id (Example:29)"
+          />
+        </div>
+        <div class="form-group col-md-6">
+          <label for="inputEmail4">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="Email (email:ameyavaidya92@gmail.com)"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Track Order</button>
+      </div>
+    </form>
+  </div>
+  <div class="col my-4">
+    <h2>Your Order Status:-</h2>
+    <div>
+      <ul class="list-group" id="items"></ul>
+        <i>ENTER YOUR ORDER ID AND EMAIL AND CLICK TRACK ORDER BUTTON TO FIND DETAILS ABOUT YOUR ORDER</i> <b>THANK YOU</b>
+    </div>
+  </div>
+   <!--<div class="col my-4">
+    <h2>Your Order Details:-</h2>
+    <div>
+      <ul class="list-group" id="citems"></ul>
+        <i>ENTER YOUR ORDER ID AND EMAIL AND CLICK TRACK ORDER BUTTON TO FIND DETAILS ABOUT YOUR ORDER</i> <b>THANK YOU</b>
+    </div>
+  </div>-->
+</div>
+{% endblock %} {% block js %}
+<script>
+  $("#trackerForm").submit(function (event) {
+    $("#items").empty();
+    var formData = {
+      orderId: $("input[name=orderId]").val(),
+      email: $("input[name=email]").val(),
+      csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+    };
+    $.ajax({
+      type: "POST",
+      url: "/shop/tracker/",
+      data: formData,
+      encode: true,
+    })
+    .done(function (data) {
+      console.log(data)
+      updates = JSON.parse(data);
+    
+      if (updates.length > 0 & updates != {}) {
+        for (i = 0; i < updates.length; i++) {
+          let text = updates[i]["text"];
+          let time = updates[i]["time"];
+          mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${text}
+                    <span class="badge badge-primary badge-pill">${time}</span>
+                </li>`;
+          $("#items").append(mystr);
+        }
+      } else {
+        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Sorry, We are not able to fetch this order id and email. Make sure to type correct order Id and email</li>`;
+        $("#items").append(mystr);
+      }
+
+cart = data[1];
+console.log(cart)
+    });
+    event.preventDefault();
+  });
+</script>
+{% endblock %}
